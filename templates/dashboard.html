@@ -1,0 +1,40 @@
+{% extends "base.html" %}{% block title %}Dashboard | DataInsight<script>
+function changeChart(type, column) {
+  const image = document.getElementById(type + '-chart');
+  image.src = `/dataset/{{ selected }}/chart/${type}?column=${encodeURIComponent(column)}&t=${Date.now()}`;
+}
+</script>
+{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4"><div><p class="eyebrow mb-1">PAINEL DE CONTROLE</p><h1 class="fw-bold mb-0">Análise de dados</h1><p class="text-secondary mb-0">Importe planilhas CSV e transforme dados em indicadores.</p></div></div>
+<div class="row g-4">
+<div class="col-lg-4"><div class="card panel h-100"><div class="card-body"><h5 class="fw-bold">Importar dados</h5><p class="small text-secondary">Envie um arquivo CSV para gerar uma análise.</p>
+<form method="post" action="{{ url_for('upload') }}" enctype="multipart/form-data">
+<label class="form-label">Nome do conjunto de dados</label><input class="form-control mb-3" name="title" placeholder="Ex.: Vendas do mês">
+<label class="form-label">Arquivo CSV</label><input class="form-control" type="file" name="file" accept=".csv" required>
+<button class="btn btn-primary w-100 mt-3">Importar CSV</button></form></div></div></div>
+<div class="col-lg-8"><div class="card panel h-100"><div class="card-body"><div class="d-flex justify-content-between flex-wrap gap-2"><h5 class="fw-bold">Conjuntos de dados</h5><span class="text-secondary small">{{ datasets|length }} arquivo(s)</span></div>
+{% if datasets %}<form method="get" class="d-flex gap-2 mb-3"><select class="form-select" name="dataset">{% for d in datasets %}<option value="{{ d.id }}" {% if selected == d.id %}selected{% endif %}>{{ d.title }} — {{ d.uploaded_at }}</option>{% endfor %}</select><button class="btn btn-outline-primary">Abrir</button></form>
+<div class="list-group list-group-flush">{% for d in datasets[:5] %}<div class="list-group-item px-0 d-flex justify-content-between"><div><strong>{{ d.title }}</strong><div class="small text-secondary">{{ d.filename }} · enviado por {{ d.uploader }}</div></div><span class="small text-secondary">{{ d.uploaded_at }}</span></div>{% endfor %}</div>
+{% else %}<div class="empty-state"><div class="display-6">▤</div><p class="mb-0">Nenhum conjunto de dados foi importado ainda.</p></div>{% endif %}
+</div></div></div></div>
+{% if analysis %}
+<div class="mt-4"><div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-3"><div><p class="eyebrow mb-1">VISÃO GERAL</p><h3 class="fw-bold mb-0">{{ analysis.dataset.title }}</h3><span class="text-secondary small">Enviado por {{ analysis.dataset.uploader }} em {{ analysis.dataset.uploaded_at }}</span></div></div>
+<div class="row g-3 mb-4">
+{% for label, value in [('Registros', analysis.rows), ('Colunas', analysis.cols), ('Valores ausentes', analysis.missing), ('Colunas numéricas', analysis.numeric_count)] %}
+<div class="col-6 col-xl-3"><div class="metric-card"><span>{{ label }}</span><strong>{{ value }}</strong></div></div>{% endfor %}
+</div>
+<div class="card panel mb-4"><div class="card-body"><h5 class="fw-bold mb-3">Estatísticas descritivas</h5>
+{% if analysis.stats %}<div class="table-responsive"><table class="table table-hover align-middle"><thead><tr><th>Coluna</th><th>Média</th><th>Mediana</th><th>Mínimo</th><th>Máximo</th><th>Desvio padrão</th></tr></thead><tbody>{% for s in analysis.stats %}<tr><td class="fw-semibold">{{ s.name }}</td><td>{{ s.mean }}</td><td>{{ s.median }}</td><td>{{ s.min }}</td><td>{{ s.max }}</td><td>{{ s.std }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<p class="text-secondary mb-0">Não há colunas numéricas para calcular estatísticas.</p>{% endif %}
+</div></div>
+{% if analysis.stats %}<div class="row g-3 mb-4"><div class="col-lg-6"><div class="card panel"><div class="card-body"><h5 class="fw-bold">Distribuição</h5><select class="form-select mb-2" onchange="changeChart('hist', this.value)">{% for s in analysis.stats %}<option value="{{ s.name }}">{{ s.name }}</option>{% endfor %}</select><img id="hist-chart" class="chart-img" src="{{ url_for('chart', dataset_id=selected, chart_type='hist') }}?column={{ analysis.stats[0].name|urlencode }}" alt="Histograma"></div></div></div>
+<div class="col-lg-6"><div class="card panel"><div class="card-body"><h5 class="fw-bold">Valores por registro</h5><select class="form-select mb-2" onchange="changeChart('bar', this.value)">{% for s in analysis.stats %}<option value="{{ s.name }}">{{ s.name }}</option>{% endfor %}</select><img id="bar-chart" class="chart-img" src="{{ url_for('chart', dataset_id=selected, chart_type='bar') }}?column={{ analysis.stats[0].name|urlencode }}" alt="Gráfico de barras"></div></div></div></div>{% endif %}
+<div class="card panel"><div class="card-body"><h5 class="fw-bold mb-3">Prévia dos dados</h5><div class="table-responsive"><table class="table table-sm table-striped"><thead><tr>{% for c in analysis.columns %}<th>{{ c }}</th>{% endfor %}</tr></thead><tbody>{% for r in analysis.preview %}<tr>{% for c in analysis.columns %}<td>{{ r[c] }}</td>{% endfor %}</tr>{% endfor %}</tbody></table></div></div></div>
+</div>{% endif %}
+<script>
+function changeChart(type, column) {
+  const image = document.getElementById(type + '-chart');
+  image.src = `/dataset/{{ selected }}/chart/${type}?column=${encodeURIComponent(column)}&t=${Date.now()}`;
+}
+</script>
+{% endblock %}

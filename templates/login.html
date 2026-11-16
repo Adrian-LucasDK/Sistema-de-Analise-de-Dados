@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block title %}Entrar | DataInsight{% endblock %}
+{% block content %}<div class="login-wrap"><div class="card login-card shadow-sm"><div class="card-body p-4 p-md-5">
+<div class="brand-mark">DI</div><h2 class="fw-bold mt-3">Acessar sistema</h2><p class="text-secondary">Entre para visualizar os dados e indicadores.</p>
+<form method="post"><label class="form-label mt-3">Usuário</label><input class="form-control form-control-lg" name="username" required autofocus>
+<label class="form-label mt-3">Senha</label><input class="form-control form-control-lg" type="password" name="password" required>
+<button class="btn btn-primary btn-lg w-100 mt-4">Entrar</button></form>
+</div></div></div>{% endblock %}

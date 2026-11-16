@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block title %}Usuários | DataInsight{% endblock %}
+{% block content %}<div class="mb-4"><p class="eyebrow mb-1">ADMINISTRAÇÃO</p><h1 class="fw-bold">Gerenciar usuários</h1><p class="text-secondary">Crie contas e controle quem pode acessar o sistema.</p></div>
+<div class="row g-4"><div class="col-lg-5"><div class="card panel"><div class="card-body"><h5 class="fw-bold mb-3">Adicionar usuário</h5>
+<form method="post" action="{{ url_for('create_user') }}"><label class="form-label">Nome de usuário</label><input class="form-control mb-3" name="username" minlength="3" required>
+<label class="form-label">Senha inicial</label><input class="form-control mb-3" type="password" name="password" minlength="6" required>
+<label class="form-label">Tipo de acesso</label><select class="form-select mb-3" name="role"><option value="user">Usuário comum</option><option value="admin">Administrador</option></select>
+<button class="btn btn-primary w-100">Criar usuário</button></form></div></div></div>
+<div class="col-lg-7"><div class="card panel"><div class="card-body"><h5 class="fw-bold mb-3">Contas cadastradas</h5><div class="table-responsive"><table class="table align-middle"><thead><tr><th>Usuário</th><th>Perfil</th><th>Criação</th><th></th></tr></thead><tbody>
+{% for u in users %}<tr><td class="fw-semibold">{{ u.username }}{% if u.id == session.get('user_id') %}<span class="badge text-bg-light ms-1">Você</span>{% endif %}</td><td><span class="badge {{ 'text-bg-primary' if u.role == 'admin' else 'text-bg-secondary' }}">{{ 'Admin' if u.role == 'admin' else 'Usuário' }}</span></td><td class="small">{{ u.created_at }}</td><td>{% if u.id != session.get('user_id') %}<form method="post" action="{{ url_for('delete_user', user_id=u.id) }}" onsubmit="return confirm('Tem certeza que deseja excluir este usuário? Os arquivos enviados por ele também serão removidos.');"><button class="btn btn-sm btn-outline-danger">Excluir</button></form>{% else %}<span class="small text-secondary">Conta atual</span>{% endif %}</td></tr>{% endfor %}
+</tbody></table></div></div></div></div></div>{% endblock %}
